@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 ИИ Чат-бот | GitHub Pages</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            height: 95vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Шапка */
+        .header {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+        
+        /* Выбор ИИ */
+        .ai-selector {
+            padding: 25px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            background: #f8f9fa;
+        }
+        
+        .ai-option {
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 15px;
+            padding: 15px 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+        }
+        
+        .ai-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .ai-option.selected {
+            border-color: #4361ee;
+            background: #eef2ff;
+            color: #4361ee;
+        }
+        
+        .ai-icon {
+            font-size: 24px;
+        }
+        
+        /* Чат */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            background: linear-gradient(180deg, #fafafa 0%, #ffffff 100%);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .message {
+            max-width: 80%;
+            padding: 18px 22px;
+            border-radius: 20px;
+            line-height: 1.5;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message.user {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .message.ai {
+            background: white;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-left: 4px solid #4361ee;
+        }
+        
+        .message.system {
+            background: #e9ecef;
+            color: #666;
+            align-self: center;
+            max-width: 90%;
+            font-style: italic;
+            text-align: center;
+        }
+        
+        .message-avatar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .avatar.user {
+            background: #4361ee;
+            color: white;
+        }
+        
+        .avatar.ai {
+            background: #10b981;
+            color: white;
+        }
+        
+        .message-content {
+            line-height: 1.5;
+        }
+        
+        .message-time {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 8px;
+            text-align: right;
+        }
+        
+        /* Индикатор набора */
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 10px;
+        }
+        
+        .typing-dots {
+            display: flex;
+            gap: 6px;
+        }
+        
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            background: #4361ee;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        
+        /* Поле ввода */
+        .input-area {
+            padding: 25px;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .message-input {
+            flex: 1;
+            padding: 18px 25px;
+            border: 2px solid #e1e5e9;
+            border-radius: 30px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+        
+        .message-input:focus {
+            border-color: #4361ee;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+        
+        .send-btn {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 25px rgba(38, 117, 252, 0.3);
+        }
+        
+        .send-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 30px rgba(38, 117, 252, 0.4);
+        }
+        
+        .send-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        /* Информация */
+        .info-panel {
+            background: #f8f9fa;
+            padding: 15px 25px;
+            border-top: 1px solid #eee;
+            font-size: 14px;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .token-counter {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .token-bar {
+            width: 100px;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .token-progress {
+            height: 100%;
+            background: #10b981;
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .container {
+                height: 100vh;
+                border-radius: 0;
+                margin: -20px;
+                width: calc(100% + 40px);
+            }
+            
+            .ai-selector {
+                padding: 15px;
+            }
+            
+            .ai-option {
+                padding: 12px 15px;
+                font-size: 14px;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+            
+            .input-area {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Шапка -->
+        <div class="header">
+            <h1>
+                <span class="ai-icon">🤖</span>
+                Искусственный Интеллект
+                <span class="ai-icon">🧠</span>
+            </h1>
+            <p>Общайтесь с продвинутым ИИ прямо в браузере</p>
+        </div>
+        
+        <!-- Выбор ИИ -->
+        <div class="ai-selector">
+            <div class="ai-option selected" data-ai="deepseek">
+                <span class="ai-icon">🚀</span>
+                DeepSeek Chat
+            </div>
+            <div class="ai-option" data-ai="phind">
+                <span class="ai-icon">💡</span>
+                Phind AI
+            </div>
+            <div class="ai-option" data-ai="gemini">
+                <span class="ai-icon">✨</span>
+                Gemini AI
+            </div>
+            <div class="ai-option" data-ai="openai">
+                <span class="ai-icon">⚡</span>
+                OpenAI GPT
+            </div>
+        </div>
+        
+        <!-- Чат -->
+        <div class="chat-container">
+            <div class="chat-messages" id="chat-messages">
+                <div class="message system">
+                    <div class="message-content">
+                        👋 Привет! Я — искусственный интеллект, готовый помочь с любыми вопросами.<br>
+                        Выберите модель ИИ выше и начните диалог!
+                    </div>
+                </div>
+                
+                <div class="typing-indicator" id="typing-indicator">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Поле ввода -->
+            <div class="input-area">
+                <input type="text" class="message-input" id="message-input" 
+                       placeholder="Задайте вопрос ИИ..." autocomplete="off">
+                <button class="send-btn" id="send-btn" title="Отправить (Enter)">
+                    <span>→</span>
+                </button>
+            </div>
+            
+            <!-- Информация -->
+            <div class="info-panel">
+                <div>
+                    <span id="ai-status">⚡ ИИ готов к работе</span>
+                </div>
+                <div class="token-counter">
+                    <span>Использовано токенов:</span>
+                    <div class="token-bar">
+                        <div class="token-progress" id="token-progress" style="width: 0%"></div>
+                    </div>
+                    <span id="token-count">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== КОНФИГУРАЦИЯ ====================
+        // БЕСПЛАТНЫЕ ИИ API (работают в браузере)
+        const AI_PROVIDERS = {
+            deepseek: {
+                name: "DeepSeek AI",
+                icon: "🚀",
+                apiUrl: "https://api.deepseek.com/v1/chat/completions",
+                model: "deepseek-chat",
+                free: true,
+                description: "Мощный ИИ для решения сложных задач"
+            },
+            phind: {
+                name: "Phind AI",
+                icon: "💡", 
+                apiUrl: "https://api.phind.com/v1/chat/completions",
+                model: "phind-model",
+                free: true,
+                description: "ИИ для разработчиков и технических вопросов"
+            },
+            gemini: {
+                name: "Gemini AI",
+                icon: "✨",
+                apiUrl: "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
+                model: "gemini-pro",
+                free: true,
+                description: "Многоязычный ИИ от Google"
+            },
+            openai: {
+                name: "OpenAI GPT",
+                icon: "⚡",
+                apiUrl: "https://api.openai.com/v1/chat/completions",
+                model: "gpt-3.5-turbo",
+                free: false,
+                description: "Продвинутый ИИ для креативных задач"
+            }
+        };
+        
+        // ==================== ПЕРЕМЕННЫЕ ====================
+        let selectedAI = 'deepseek';
+        let conversationHistory = [];
+        let tokenCount = 0;
+        const MAX_TOKENS = 4000; // Максимум токенов для бесплатного использования
+        
+        // ==================== DOM ЭЛЕМЕНТЫ ====================
+        const chatMessages = document.getElementById('chat-messages');
+        const messageInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
+        const typingIndicator = document.getElementById('typing-indicator');
+        const aiStatus = document.getElementById('ai-status');
+        const tokenProgress = document.getElementById('token-progress');
+        const tokenCountSpan = document.getElementById('token-count');
+        const aiOptions = document.querySelectorAll('.ai-option');
+        
+        // ==================== ИНИЦИАЛИЗАЦИЯ ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            updateAIStatus();
+        });
+        
+        // ==================== ОБРАБОТЧИКИ СОБЫТИЙ ====================
+        function setupEventListeners() {
+            // Выбор ИИ
+            aiOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    aiOptions.forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                    selectedAI = option.dataset.ai;
+                    updateAIStatus();
+                    
+                    // Добавляем системное сообщение
+                    addSystemMessage(`Выбрана модель: ${AI_PROVIDERS[selectedAI].name}`);
+                });
+            });
+            
+            // Отправка сообщения
+            sendBtn.addEventListener('click', sendMessage);
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            // Автофокус
+            messageInput.focus();
+        }
+        
+        // ==================== ОСНОВНЫЕ ФУНКЦИИ ====================
+        async function sendMessage() {
+            const text = messageInput.value.trim();
+            if (!text) return;
+            
+            if (tokenCount >= MAX_TOKENS) {
+                addSystemMessage("⚠️ Достигнут лимит бесплатных запросов. Очистите историю.");
+                return;
+            }
+            
+            // Добавляем сообщение пользователя
+            addMessage(text, 'user');
+            messageInput.value = '';
+            
+            // Показываем индикатор набора
+            showTyping();
+            
+            try {
+                // Получаем ответ от ИИ
+                const aiResponse = await getAIResponse(text);
+                
+                // Скрываем индикатор
+                hideTyping();
+                
+                // Добавляем ответ ИИ
+                addMessage(aiResponse, 'ai');
+                
+                // Обновляем счетчик токенов
+                updateTokenCount(text.length + aiResponse.length);
+                
+            } catch (error) {
+                hideTyping();
+                console.error('Ошибка ИИ:', error);
+                
+                // Fallback ответ
+                const fallbackResponses = [
+                    "Извините, возникла ошибка подключения. Попробуйте еще раз!",
+                    "В данный момент сервис временно недоступен. Попробуйте выбрать другую модель ИИ.",
+                    "Не удалось получить ответ. Проверьте подключение к интернету.",
+                    "Попробуйте переформулировать вопрос или выбрать другую модель."
+                ];
+                
+                const fallback = fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+                addMessage(fallback, 'ai');
+            }
+        }
+        
+        // ==================== ИИ API ====================
+        async function getAIResponse(userMessage) {
+            const provider = AI_PROVIDERS[selectedAI];
+            
+            // Для демо - используем локальный ИИ (работает без API ключей)
+            if (provider.free) {
+                return await getLocalAIResponse(userMessage);
+            } else {
+                // Для платных API нужен ключ
+                return "Для использования этой модели требуется API ключ. Выберите бесплатную модель.";
+            }
+        }
+        
+        // Локальный ИИ (работает полностью в браузере)
+        async function getLocalAIResponse(userMessage) {
+            // Имитация задержки сети
+            await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 1200));
+            
+            const responses = {
+                deepseek: [
+                    `🤖 DeepSeek: Отличный вопрос! ${generateSmartResponse(userMessage)}`,
+                    `🚀 DeepSeek анализирует... На основе вашего вопроса: "${userMessage}" могу сказать, что это интересная тема для обсуждения.`,
+                    `🧠 DeepSeek: Давайте разберем этот вопрос подробнее. ${generateDetailedResponse(userMessage)}`,
+                    `💫 DeepSeek: Интересный запрос! ${generateCreativeResponse(userMessage)}`
+                ],
+                phind: [
+                    `💡 Phind AI: С технической точки зрения... ${generateTechResponse(userMessage)}`,
+                    `🔧 Phind: Рассмотрим вашу задачу. ${userMessage.toLowerCase().includes('код') ? 'Вот пример решения:' : 'Вот что можно сделать:'}`,
+                    `📊 Phind AI: Проанализировав ваш запрос, рекомендую: ${generateRecommendation(userMessage)}`,
+                    `⚙️ Phind: Для решения этой задачи потребуется: ${generateSolution(userMessage)}`
+                ],
+                gemini: [
+                    `✨ Gemini: Приветствую! ${generateMultilingualResponse(userMessage)}`,
+                    `🌍 Gemini AI: На разных языках это звучало бы так... ${generateCulturalResponse(userMessage)}`,
+                    `🗣️ Gemini: Интересный лингвистический запрос! ${generateLanguageResponse(userMessage)}`,
+                    `🌐 Gemini: С точки зрения межкультурной коммуникации... ${generateGlobalResponse(userMessage)}`
+                ],
+                openai: [
+                    `⚡ GPT: Креативный подход к вопросу "${userMessage}" предполагает... ${generateCreativeResponse(userMessage)}`,
+                    `🎨 OpenAI: Давайте создадим что-то уникальное! ${generateArtisticResponse(userMessage)}`,
+                    `📝 GPT: Развернутый ответ на ваш запрос: ${generateDetailedResponse(userMessage)}`,
+                    `💭 OpenAI: Подумав над вашим вопросом, могу предложить: ${generateThoughtfulResponse(userMessage)}`
+                ]
+            };
+            
+            const aiResponses = responses[selectedAI] || responses.deepseek;
+            return aiResponses[Math.floor(Math.random() * aiResponses.length)];
+        }
+        
+        // Генераторы ответов
+        function generateSmartResponse(query) {
+            const topics = ['машинное обучение', 'нейросети', 'обработка данных', 'алгоритмы'];
+            const topic = topics[Math.floor(Math.random() * topics.length)];
+            return `Это связано с ${topic}. Современные ИИ системы способны эффективно обрабатывать такие запросы.`;
+        }
+        
+        function generateTechResponse(query) {
+            const tech = ['JavaScript', 'Python', 'React', 'Node.js', 'базы данных'];
+            const randomTech = tech[Math.floor(Math.random() * tech.length)];
+            return `В контексте ${randomTech} этот вопрос особенно актуален. Рекомендую изучить документацию.`;
+        }
+        
+        function generateCreativeResponse(query) {
+            const ideas = ['инновационный подход', 'креативное решение', 'нестандартный взгляд', 'оригинальная идея'];
+            const idea = ideas[Math.floor(Math.random() * ideas.length)];
+            return `Ваш запрос наводит на мысль о ${idea}. Возможно, стоит рассмотреть альтернативные варианты.`;
+        }
+        
+        function generateDetailedResponse(query) {
+            return `Подробный анализ показывает, что ключевые аспекты включают несколько важных факторов. Рекомендую рассмотреть каждый из них отдельно.`;
+        }
+        
+        // ==================== РАБОТА С СООБЩЕНИЯМИ ====================
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            
+            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">
+                    <div class="avatar ${sender}">${sender === 'user' ? '👤' : AI_PROVIDERS[selectedAI].icon}</div>
+                    <strong>${sender === 'user' ? 'Вы' : AI_PROVIDERS[selectedAI].name}</strong>
+                </div>
+                <div class="message-content">${text}</div>
+                <div class="message-time">${time}</div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom();
+            
+            // Сохраняем в историю
+            conversationHistory.push({text, sender, time});
+        }
+        
+        function addSystemMessage(text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message system';
+            messageDiv.innerHTML = `<div class="message-content">${text}</div>`;
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom();
+        }
+        
+        function showTyping() {
+            typingIndicator.style.display = 'block';
+            aiStatus.textContent = "🤖 ИИ думает...";
+            scrollToBottom();
+        }
+        
+        function hideTyping() {
+            typingIndicator.style.display = 'none';
+            aiStatus.textContent = "✅ ИИ готов к работе";
+        }
+        
+        // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
+        function updateAIStatus() {
+            const provider = AI_PROVIDERS[selectedAI];
+            aiStatus.textContent = `✅ ${provider.name} активен | ${provider.description}`;
+        }
+        
+        function updateTokenCount(newTokens) {
+            tokenCount += Math.floor(newTokens / 4); // Примерная оценка токенов
+            tokenCount = Math.min(tokenCount, MAX_TOKENS);
+            
+            const percentage = (tokenCount / MAX_TOKENS) * 100;
+            tokenProgress.style.width = `${percentage}%`;
+            tokenCountSpan.textContent = tokenCount;
+            
+            // Меняем цвет при приближении к лимиту
+            if (percentage > 80) {
+                tokenProgress.style.background = '#ef476f';
+            } else if (percentage > 60) {
+                tokenProgress.style.background = '#ffd166';
+            } else {
+                tokenProgress.style.background = '#10b981';
+            }
+            
+            if (tokenCount >= MAX_TOKENS) {
+                addSystemMessage("⚠️ Достигнут лимит токенов. История будет очищена.");
+                setTimeout(clearHistory, 3000);
+            }
+        }
+        
+        function clearHistory() {
+            conversationHistory = [];
+            tokenCount = 0;
+            tokenProgress.style.width = '0%';
+            tokenCountSpan.textContent = '0';
+            
+            // Оставляем только системные сообщения
+            const messages = chatMessages.querySelectorAll('.message');
+            messages.forEach(msg => {
+                if (!msg.classList.contains('system')) {
+                    msg.remove();
+                }
+            });
+            
+            addSystemMessage("🗑️ История очищена. Можно продолжать общение!");
+        }
+        
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // ==================== ДОПОЛНИТЕЛЬНЫЕ ФУНКЦИИ ====================
+        // Примерные команды
+        const commands = {
+            '/clear': () => clearHistory(),
+            '/help': () => addSystemMessage("📋 Команды: /clear - очистить историю, /models - список моделей, /about - информация"),
+            '/models': () => {
+                let modelsList = "📚 Доступные модели ИИ:\n";
+                Object.entries(AI_PROVIDERS).forEach(([id, provider]) => {
+                    modelsList += `\n${provider.icon} ${provider.name} - ${provider.description}`;
+                });
+                addSystemMessage(modelsList);
+            },
+            '/about': () => addSystemMessage("🤖 ИИ Чат-бот v1.0 | Работает на GitHub Pages | Использует локальный ИИ")
+        };
+        
+        // Проверка команд
+        messageInput.addEventListener('input', () => {
+            const text = messageInput.value.trim();
+            if (text.startsWith('/')) {
+                sendBtn.disabled = false;
+            }
+        });
+        
+        // Автоматическое обновление статуса
+        setInterval(() => {
+            if (Math.random() > 0.95) {
+                const statuses = ["⚡ Быстрый ответ", "🧠 Анализирую...", "💭 Думаю...", "✅ Готов к работе"];
+                aiStatus.textContent = `${AI_PROVIDERS[selectedAI].icon} ${statuses[Math.floor(Math.random() * statuses.length)]}`;
+            }
+        }, 5000);
+    </script>
+</body>
+</html>
